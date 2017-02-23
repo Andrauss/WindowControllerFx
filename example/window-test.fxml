@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane id="AnchorPane" prefHeight="441.0" prefWidth="600.0" style="-fx-background-color: white;" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" >
+   <children>
+      <Button fx:id="btnShow" layoutX="107.0" layoutY="75.0" mnemonicParsing="false" prefHeight="58.0" prefWidth="174.0" style="-fx-base: #00CCFF;" text="show()">
+         <font>
+            <Font name="System Bold" size="19.0" />
+         </font></Button>
+      <Button fx:id="btnShowAsDialog" layoutX="297.0" layoutY="75.0" mnemonicParsing="false" prefHeight="58.0" prefWidth="174.0" style="-fx-base: #CC99FF;" text="showAsDialog()">
+         <font>
+            <Font name="System Bold" size="17.0" />
+         </font></Button>
+      <Button fx:id="btnShowModal" layoutX="107.0" layoutY="152.0" mnemonicParsing="false" prefHeight="58.0" prefWidth="174.0" style="-fx-base: #99FF99;" text="showModal()">
+         <font>
+            <Font name="System Bold" size="19.0" />
+         </font></Button>
+      <Button fx:id="btnShowUndecorated" layoutX="297.0" layoutY="152.0" mnemonicParsing="false" prefHeight="58.0" prefWidth="174.0" style="-fx-base: #FFFFCC;" text="showUndecorated()">
+         <font>
+            <Font name="System Bold" size="14.0" />
+         </font></Button>
+      <Button fx:id="btnShowUndecoratedTransp" layoutX="103.0" layoutY="243.0" mnemonicParsing="false" prefHeight="58.0" prefWidth="371.0" style="-fx-base: FFCA8C;" text="showUndecorated(transparent)">
+         <font>
+            <Font name="System Bold" size="20.0" />
+         </font></Button>
+      <Button fx:id="btnShowCustom" layoutX="103.0" layoutY="322.0" mnemonicParsing="false" prefHeight="58.0" prefWidth="371.0" style="-fx-base: #CC33FF;" text="CUSTOM WINDOW">
+         <font>
+            <Font name="System Bold" size="21.0" />
+         </font></Button>
+      <HBox alignment="CENTER_LEFT" layoutX="-6.0" layoutY="-4.0" prefHeight="58.0" prefWidth="600.0" style="-fx-background-color: rgb(55, 151, 210);" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+         <children>
+            <Label fx:id="lbParam" prefHeight="17.0" prefWidth="545.0" text="WindowControllerFx" textFill="WHITE" HBox.hgrow="ALWAYS">
+               <padding>
+                  <Insets left="20.0" />
+               </padding>
+               <font>
+                  <Font size="24.0" />
+               </font>
+            </Label>
+            <Button contentDisplay="CENTER" mnemonicParsing="false" onAction="#CloseWindow" style="-fx-base: red;" text="Close" />
+         </children>
+         <effect>
+            <DropShadow color="#00000079" height="72.77" radius="17.6925" width="0.0" />
+         </effect>
+      </HBox>
+   </children>
+</AnchorPane>
