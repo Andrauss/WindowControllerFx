@@ -55,7 +55,7 @@ If you do not work with FXML, just override the getRootPane method instead of ge
 ```java
 
     @Override
-    public String getRootPane() {
+    public Region getRootPane() {
       BorderPane pane = new BorderPane();
 
        MenuBar bar = new MenuBar(
