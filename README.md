@@ -50,7 +50,7 @@ Custom controller implementation to facilite stage creation
 
 ## Working with Region
 
-If you do not work with FXML, just override the getRegion method, see below:
+If you do not work with FXML, just override the getRegion method instead of getFXML, see below:
 
 ```java
 
