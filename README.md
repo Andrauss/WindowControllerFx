@@ -6,7 +6,7 @@ Custom controller implementation to facilite stage creation
 
 ## Working with FXML
 
-2 - Create you FXML layout on SceneBuilder or preffered IDE
+2 - Create your FXML layout on SceneBuilder or preffered IDE
 
 3 - Extend your FXML controller of WindowControllerFx, such as showed below
 
