@@ -8,14 +8,14 @@ Custom controller implementation to facilite stage creation
 
 2 - Create your FXML layout on SceneBuilder or preffered IDE
 
-3 - Extend your FXML controller of WindowControllerFx, such as showed below
+3 - Extend your FXML controller of WindowControllerFx
 
 ```java
 
   public class MyController extends WindowControllerFx
   
 ```
-4 - Override getFXML method passing the location of your FXML layout, such as showed below
+4 - Override getFXML method passing the location of your FXML layout
 
 ```java
 
