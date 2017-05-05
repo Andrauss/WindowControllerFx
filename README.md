@@ -1,7 +1,7 @@
 # WindowControllerFx
 Custom controller implementation to facilitate stage creation
 
-## Sample Usage 
+## Usage 
 1 - Download .jar and add to your project classpath
 
 ## Working with FXML
