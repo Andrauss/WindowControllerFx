@@ -1,5 +1,5 @@
 # WindowControllerFx
-Custom controller implementation to facilite stage creation
+Custom controller implementation to facilitate stage creation
 
 ## Sample Usage 
 1 - Download .jar and add to your project classpath
