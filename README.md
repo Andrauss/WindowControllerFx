@@ -25,7 +25,7 @@ Custom controller implementation to facilitate stage creation
     }
   
 ```
-5 - (Optional) override initialize method if you want node initialization control 
+5 - Override initialize method if you want node initialization control 
 
 6 - Instance your controller and use one of show methods to display your stage
 ```java
