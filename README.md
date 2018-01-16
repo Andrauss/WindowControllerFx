@@ -50,7 +50,7 @@ Custom controller implementation to facilitate stage creation
 
 ## Working with Region
 
-If you do not work with FXML, just override the getRootPane method instead of getFXML, see below:
+If you don't work with FXML, just override the getRootPane method instead of getFXML, see below:
 
 ```java
 
@@ -77,7 +77,7 @@ If you do not work with FXML, just override the getRootPane method instead of ge
 
 Feel free to contribute. 
 
-See example to full usage.
+See example in sources to full usage.
 
 ## License
 
