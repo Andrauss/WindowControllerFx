@@ -2,6 +2,7 @@ package br.com.fandrauss.fx.gui;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+import javafx.beans.NamedArg;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.fxml.FXMLLoader;
@@ -32,8 +33,8 @@ public abstract class WindowControllerFx implements Initializable {
     private Image icon;
     private Stage stage;
     private Modality modality;
-    private StageStyle stageStyle;
     private boolean wait = false;
+    private boolean blur = false;
     private ShowEffect effectType;
     private Effect oldEffectParent;
     private Effect showEffect;
@@ -44,13 +45,27 @@ public abstract class WindowControllerFx implements Initializable {
         BLUR, COLOR_ADJUST;
     }
 
+    /**
+     * O construtor default deve existir para que o controller possa ser
+     * instanciado pelo FXMLLoader no momento do carregamento do layout (no caso
+     * de layout FXML)
+     *
+     * @see FXMLLoader
+     */
     public WindowControllerFx() {
 
     }
 
+    /**
+     * Controller initialization method, this method is called when the screen
+     * layout is loaded from an FXML. This method can be overridden if you need
+     * to perform any procedure at controller startup.
+     *
+     * @param location
+     * @param resources
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Do nothing
     }
 
     /**
@@ -88,10 +103,10 @@ public abstract class WindowControllerFx implements Initializable {
     }
 
     /**
-     * If you have your own stage you can pass here. Normally used for the
+     * If you have your own stage you can pass here, Normally used for the
      * primary stage
      *
-     * @param stage custom stage
+     * @param stage
      * @return
      */
     public WindowControllerFx setStage(Stage stage) {
@@ -106,6 +121,17 @@ public abstract class WindowControllerFx implements Initializable {
      */
     public WindowControllerFx setWait() {
         this.wait = true;
+        return this;
+    }
+
+    /**
+     * Set blur effect on parent window
+     *
+     * @param blur
+     * @return
+     */
+    public WindowControllerFx setBlur(boolean blur) {
+        this.blur = blur;
         return this;
     }
 
@@ -132,9 +158,10 @@ public abstract class WindowControllerFx implements Initializable {
     }
 
     /**
-     * Maximize stage
+     * Maximize stage. Note: can only called after window creation
      *
      * @return
+     * @throws RuntimeException if called before window creation
      */
     public WindowControllerFx setMaximized() {
         if (stage == null) {
@@ -149,6 +176,7 @@ public abstract class WindowControllerFx implements Initializable {
      *
      * @param height
      * @return
+     * @throws RuntimeException if called before window creation
      */
     public WindowControllerFx setHeight(double height) {
         if (stage == null) {
@@ -163,6 +191,7 @@ public abstract class WindowControllerFx implements Initializable {
      *
      * @param width
      * @return
+     * @throws RuntimeException if called before window creation
      */
     public WindowControllerFx setWidth(double width) {
         if (stage == null) {
@@ -173,9 +202,10 @@ public abstract class WindowControllerFx implements Initializable {
     }
 
     /**
-     * Minimize stage
+     * Minimize stage. Note: can only called after window creation
      *
      * @return
+     * @throws RuntimeException if called before window creation
      */
     public WindowControllerFx setMinimized() {
         if (stage == null) {
@@ -186,9 +216,10 @@ public abstract class WindowControllerFx implements Initializable {
     }
 
     /**
-     * Switch to fullscreen mode
+     * Switch to fullscreen mode. Note: can only called after window creation
      *
      * @return
+     * @throws RuntimeException if called before window creation
      */
     public WindowControllerFx fullScreen() {
         if (stage == null) {
@@ -199,9 +230,10 @@ public abstract class WindowControllerFx implements Initializable {
     }
 
     /**
-     * exit fullscreen mode
+     * Exit fullscreen mode. Note: can only called after window creation
      *
      * @return
+     * @throws RuntimeException if called before window creation
      */
     public WindowControllerFx exitFullSreen() {
         if (stage == null) {
@@ -214,7 +246,7 @@ public abstract class WindowControllerFx implements Initializable {
     /**
      * Get the stage title
      *
-     * @return
+     * @return title
      */
     public String getTitle() {
         return title.get();
@@ -267,112 +299,89 @@ public abstract class WindowControllerFx implements Initializable {
      */
     private void loadView() throws Exception {
 
-        if (getFXML() != null && getRootPane() == null) {
+        // Load coded layout
+        Region codedLayout = getRootPane();
+
+        // Check if getFXML methdod was overwritten
+        if (getFXML() != null && codedLayout == null) {
+
+            // Controller object, refresent FXML defined controller
+            Object controller;
+
             FXMLLoader loader = new FXMLLoader();
+
+            // Define the location based on getFXML method
             loader.setLocation(getClass().getResource(getFXML()));
-            // define the subclass as controller
 
-            // override any possible controller defined on FXML
-            loader.setControllerFactory((param) -> this);
-
-            // load the content
             try {
+
+                /**
+                 * Overrides the controller defined on FXML
+                 */
+                loader.setControllerFactory((c) -> this);
+
+                // Load the root component from FXML
                 rootWindowPane = loader.load();
-            } catch (Exception err) {
-                // If the FXML not have specified controller defines this as controller
-                if (err.getMessage().contains("No controller specified")) {
 
-                    // Try load FXML again setting this as controller
-                    loader = new FXMLLoader();
-                    loader.setLocation(getClass().getResource(getFXML()));
-                    loader.setController(this);
-                    rootWindowPane = loader.load();
+                controller = loader.getController();
 
-                } else {
-                    // If the error not caused by controller omission rethrow the error
-                    throw err;
+            } catch (Exception e) {
+                // If occurs controller not defined exception, the controller is defined to null 
+                controller = null;
+
+                // If the exception is not related to controller definition throws again
+                if (!e.getMessage().contains("specified")) {
+                    throw e;
                 }
             }
 
-        } else if (getRootPane() != null) {
-            rootWindowPane = getRootPane();
+            // If the controller is null (controler not defined exception)
+            if (controller == null) {
+
+                // Is created another loader
+                loader = new FXMLLoader();
+                loader.setLocation(getClass().getResource(getFXML()));
+
+                loader.setController(this);
+                rootWindowPane = loader.load();
+            }
+
+        } else if (codedLayout != null) {
+
+            // If the layout is hardcoded
+            rootWindowPane = codedLayout;
+
         } else {
             throw new RuntimeException("The content source is not defined, you must override getFXML or getRootPane!");
         }
     }
 
+    /**
+     * Show's the window on decorated mode
+     *
+     * @return
+     */
     public WindowControllerFx show() {
-        stageStyle = StageStyle.DECORATED;
-        createStage();
-        if (wait) {
-            stage.showAndWait();
-        } else {
-            stage.show();
-        }
-
-        onShow();
-
-        return this;
+        return show(parent);
     }
 
-    public WindowControllerFx showModal() {
-        stageStyle = StageStyle.DECORATED;
-        modality = modality != null ? modality : Modality.WINDOW_MODAL;
-        createStage();
-
-        if (wait) {
-            stage.showAndWait();
-        } else {
-            stage.show();
-        }
-
-        onShow();
-        return this;
-    }
-
-    public WindowControllerFx showUndecorated(boolean transparent) {
-        stageStyle = StageStyle.UNDECORATED;
-        createStage();
-
-        if (transparent) {
-            stage.initStyle(StageStyle.TRANSPARENT);
-            stage.getScene().setFill(Color.TRANSPARENT);
-            rootWindowPane.setStyle("-fx-background-color: transparent;");
-        }
-
-        if (wait) {
-            stage.showAndWait();
-        } else {
-            stage.show();
-        }
-
-        onShow();
-        return this;
-    }
-
-    public WindowControllerFx showAsDialg() {
-        modality = modality != null ? modality : Modality.WINDOW_MODAL;
-        stageStyle = StageStyle.UTILITY;
-        createStage();
-        if (wait) {
-            stage.showAndWait();
-        } else {
-            stage.show();
-        }
-        onShow();
-        return this;
-    }
-
-    public Stage createStage() {
+    /**
+     * Show's the window on decorated mode
+     *
+     * @param parent parent window
+     * @return
+     */
+    public WindowControllerFx show(Window parent) {
         try {
-            modality = modality != null ? modality : Modality.NONE;
+            this.parent = parent;
             loadView();
 
             if (stage == null) {
-
-                stage = createStageFromContent(parent, rootWindowPane, title.get(), stageStyle, modality);
+                stage = WindowControllerFxUtils.createStageFromContent(parent, rootWindowPane, title.get());
                 stage.titleProperty().bind(title);
-                stage.sizeToScene();
+                stage.initModality(Modality.NONE);
+                stage.initOwner(parent);
+                stage.initStyle(StageStyle.DECORATED);
 
                 if (icon != null) {
                     stage.getIcons().add(icon);
@@ -381,7 +390,253 @@ public abstract class WindowControllerFx implements Initializable {
                 stage.setScene(new Scene(rootWindowPane));
             }
 
-            applyShowEffect();
+            if (blur) {
+                applyShowEffect();
+            }
+
+            if (wait) {
+                stage.showingProperty().addListener((v, o, n) -> {
+                    if (n) {
+                        onShow();
+                    }
+                });
+                stage.showAndWait();
+            } else {
+                stage.show();
+            }
+
+            onShow();
+
+            return this;
+
+        } catch (Exception ex) {
+            throw new RuntimeException("Failed to load window", ex);
+        }
+    }
+
+    /**
+     * Show's the window on decorated mode and in modal
+     *
+     * @return
+     */
+    public WindowControllerFx showModal() {
+        return showModal(parent);
+    }
+
+    /**
+     * Show's the window on decorated mode and in modal
+     *
+     * @param parent
+     * @return
+     */
+    public WindowControllerFx showModal(Window parent) {
+        try {
+            this.parent = parent;
+            modality = modality != null ? modality : Modality.WINDOW_MODAL;
+            System.out.println(modality);
+            loadView();
+            if (stage == null) {
+                stage = WindowControllerFxUtils.createStageFromContent(parent, rootWindowPane, title.get());
+                stage.titleProperty().bind(title);
+                stage.initModality(modality);
+                stage.initOwner(parent);
+                stage.initStyle(StageStyle.DECORATED);
+
+                if (icon != null) {
+                    stage.getIcons().add(icon);
+                }
+            } else {
+                stage.setScene(new Scene(rootWindowPane));
+            }
+
+            if (blur) {
+                applyShowEffect();
+            }
+            if (wait) {
+                stage.showingProperty().addListener((v, o, n) -> {
+                    if (n) {
+                        onShow();
+                    }
+                });
+                stage.showAndWait();
+            } else {
+                stage.show();
+            }
+
+            onShow();
+            return this;
+
+        } catch (Exception ex) {
+            throw new RuntimeException("Failed to load window", ex);
+        }
+    }
+
+    /**
+     * Show the window without decoration
+     *
+     * @param transparent
+     * @return
+     */
+    public WindowControllerFx showUndecorated(@NamedArg(value = "transparent") boolean transparent) {
+        return showUndecorated(null, transparent);
+    }
+
+    /**
+     * Show the window without decoration
+     *
+     * @param parent
+     * @param transparent transparent root pane
+     * @return
+     */
+    public WindowControllerFx showUndecorated(@NamedArg(value = "parent") Window parent, @NamedArg(value = "transparent") boolean transparent) {
+        try {
+            this.parent = parent;
+            modality = modality != null ? modality : Modality.WINDOW_MODAL;
+            loadView();
+            if (stage == null) {
+                stage = WindowControllerFxUtils.createStageFromContent(parent, rootWindowPane, title.get());
+                stage.titleProperty().bind(title);
+                stage.initModality(modality);
+                stage.initOwner(parent);
+                stage.initStyle(StageStyle.UNDECORATED);
+
+                if (icon != null) {
+                    stage.getIcons().add(icon);
+                }
+            } else {
+                stage.setScene(new Scene(rootWindowPane));
+            }
+
+            if (transparent) {
+                stage.initStyle(StageStyle.TRANSPARENT);
+                stage.getScene().setFill(Color.TRANSPARENT);
+                rootWindowPane.setStyle("-fx-background-color: transparent;");
+            }
+
+            if (blur) {
+                applyShowEffect();
+            }
+            if (wait) {
+                stage.showingProperty().addListener((v, o, n) -> {
+                    if (n) {
+                        onShow();
+                    }
+                });
+                stage.showAndWait();
+            } else {
+                stage.show();
+            }
+
+            onShow();
+            return this;
+
+        } catch (Exception ex) {
+            throw new RuntimeException("Failed to load window", ex);
+        }
+    }
+
+    /**
+     * Creates a modal dialog with close button
+     *
+     * @return
+     */
+    public WindowControllerFx showAsDialg() {
+        return showAsDialg(null);
+    }
+
+    /**
+     * Creates a modal dialog with close button
+     *
+     * @param parent parent window
+     * @return
+     */
+    public WindowControllerFx showAsDialg(Window parent) {
+        try {
+            this.parent = parent;
+            modality = modality != null ? modality : Modality.WINDOW_MODAL;
+            loadView();
+
+            if (stage == null) {
+                stage = WindowControllerFxUtils.createStageFromContent(parent, rootWindowPane, title.get());
+                stage.titleProperty().bind(title);
+                stage.initModality(modality);
+                stage.initOwner(parent);
+                stage.initStyle(StageStyle.UTILITY);
+
+                if (icon != null) {
+                    stage.getIcons().add(icon);
+                }
+            } else {
+                stage.setScene(new Scene(rootWindowPane));
+            }
+
+            if (blur) {
+                applyShowEffect();
+            }
+            if (wait) {
+                stage.showingProperty().addListener((v, o, n) -> {
+                    if (n) {
+                        onShow();
+                    }
+                });
+
+                stage.showAndWait();
+            } else {
+                stage.show();
+            }
+            onShow();
+            return this;
+
+        } catch (Exception ex) {
+            throw new RuntimeException("Failed to load window", ex);
+        }
+    }
+
+    /**
+     * Create and return decorated stage
+     *
+     * @return
+     */
+    public Stage createStage() {
+        return createStage(null);
+    }
+
+    /**
+     * Create and return decorated stage
+     *
+     * @param parent parent window
+     * @return
+     */
+    public Stage createStage(Window parent) {
+        try {
+            this.parent = parent;
+            modality = modality != null ? modality : Modality.NONE;
+            loadView();
+
+            if (stage == null) {
+
+                stage = WindowControllerFxUtils.createStageFromContent(parent, rootWindowPane, title.get());
+                stage.titleProperty().bind(title);
+                stage.initModality(modality);
+                stage.initOwner(parent);
+                stage.initStyle(StageStyle.DECORATED);
+
+                if (icon != null) {
+                    stage.getIcons().add(icon);
+                }
+            } else {
+                stage.setScene(new Scene(rootWindowPane));
+            }
+
+            stage.showingProperty().addListener((v, o, n) -> {
+                if (n) {
+                    onShow();
+                }
+            });
+
+            if (blur) {
+                applyShowEffect();
+            }
 
             return stage;
         } catch (Exception ex) {
@@ -389,15 +644,20 @@ public abstract class WindowControllerFx implements Initializable {
         }
     }
 
+    /**
+     * Get the scene window
+     *
+     * @return
+     */
     public Stage getWindow() {
         return stage;
     }
 
     /**
-     * This method can be override, is called when window is showing
+     * On Show Handler, should overridden if want execute something on window
+     * shown
      */
     public void onShow() {
-
     }
 
     /**
@@ -437,8 +697,34 @@ public abstract class WindowControllerFx implements Initializable {
             }
         });
 
+//        final Effect EFFECT = new ColorAdjust(0, 0, -0.52, 0);
+//
+//        getWindow().setOnShown((evt) -> {
+//            if (parent != null) {
+//                oldEffectParent = parent.getScene().getRoot().getEffect();
+//                parent.getScene().getRoot().setEffect(EFFECT);
+//            }
+//        });
+//
+//        getWindow().setOnHiding((event) -> {
+//            if (parent != null) {
+//                parent.getScene().getRoot().setEffect(oldEffectParent);
+//            }
+//        });
     }
 
+    /**
+     * Use the WindowControllerFxUtils instead
+     *
+     * @param parent
+     * @param content
+     * @param titulo
+     * @param style
+     * @param modal
+     * @return
+     * @deprecated
+     */
+    @Deprecated
     public Stage createStageFromContent(Window parent, Parent content, String titulo, StageStyle style, Modality modal) {
         Stage s = new Stage(style);
 
@@ -450,4 +736,5 @@ public abstract class WindowControllerFx implements Initializable {
 
         return s;
     }
+
 }
